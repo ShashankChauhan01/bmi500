@@ -1,0 +1,68 @@
+AI Code Generation Documentation
+BMI 500 - HW3, Item 3 (Vibe coding a Vec-Mat multiplication function)
+Author: Shashank Chauhan
+
+LLM / Coding assistant used: Claude (Anthropic), Claude Sonnet 4.6, via claude.ai
+Date: September 15, 2026
+
+Files produced with assistance:
+- matvec_multiply.py (dot_product, matrix_vector_multiply, main)
+- matvec_tests.py (unit tests)
+- This file (AI_code_gen.txt)
+
+Summary of prompts / conversation, in order:
+
+1. I gave Claude the starter matvec_multiply.py, which contained only
+   `import random` and three comment blocks describing the required
+   functions (a for-loop dot product, a matrix-vector product built on
+   it, and a main() that tests on random 1000x1000 data), and asked it
+   to implement the code based on those comments.
+
+2. Claude generated a first pass: dot_product looping over indices,
+   matrix_vector_multiply looping over rows and calling dot_product,
+   and a main() that builds random 1000x1000 data and times the call.
+
+3. I asked Claude to assess possible failure modes for both functions
+   and add guard logic. That first round added checks for mismatched
+   vector lengths, empty vectors, an empty matrix, ragged rows (rows
+   of unequal length), and a matrix/vector dimension mismatch, each
+   raising a ValueError with a message naming the mismatch.
+
+4. I asked Claude to generate a first test suite (matvec_tests.py)
+   covering the normal cases and those guarded failure modes. All
+   tests passed.
+
+5. I asked Claude to go back over both functions and strengthen the
+   validation further, beyond just checking lengths, so that bad
+   input of any kind would fail loudly and specifically rather than
+   producing a wrong-looking "valid" answer or a confusing low-level
+   error.
+
+6. Claude implemented a second round of validation on top of the
+   original guard clauses in matvec_multiply.py:
+     - reject non-sequence arguments (None, a bare number, a string,
+       a set, a generator) with a TypeError instead of letting them
+       fail on the first len()/index call
+     - reject non-numeric elements (e.g. a string inside a vector)
+       with a TypeError naming the offending element's index
+     - reject NaN and +/-infinity entries with a ValueError, since
+       they would otherwise silently propagate into a wrong-looking
+       "valid" result instead of raising anything
+     - detect float overflow in the dot product itself (finite inputs
+       whose true product/sum exceeds float range) and raise an
+       OverflowError instead of silently returning inf
+     - validate the vector once in matrix_vector_multiply rather than
+       re-checking it inside every call to dot_product, since it's the
+       same object on every row
+   It also extended main() to cross-check matrix_vector_multiply's
+   output against an independent computation (plain zip/sum over the
+   rows, not calling dot_product or matrix_vector_multiply at all) and
+   print a PASS/FAIL line based on the max absolute error between the
+   two results.
+
+7. Claude rewrote matvec_tests.py to cover the new guards: non-sequence
+   arguments (None, a scalar, a string, a set), non-numeric elements,
+   NaN and infinite entries, and float overflow, for both dot_product
+   and matrix_vector_multiply. It also added tests confirming neither
+   function mutates its input arguments, and that tuples work as
+   inputs just as well as lists. Final suite: 33 tests, all passing.

@@ -1,0 +1,8 @@
+Code review for Matthew Runyan
+
+Overall code looks good to me here are things I observed -
+1 - It checks every input corrctly and explain clearly what went wrong. 
+2 - It's fast on big matrices because it is checking the vector once and not on every matrix. 
+3 - It never repeat the same check twice as its using shared checker for vector and matrices. 
+4 - It skips type hints and using short names like x, y, a, u etc which require extra commenting. 
+
